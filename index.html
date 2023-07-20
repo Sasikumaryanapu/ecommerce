@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products display page with Fetch</title>
+    <style>
+        /* CSS code goes here */
+
+        * {
+            margin: 0%;
+        }
+
+        body {
+            background-color: white;
+        }
+
+        nav {
+            margin: 0%;
+            width: 100%;
+            height: 4rem;
+            background-color: rgb(48, 46, 46);
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        ul {
+            width: inherit;
+            height: 2rem;
+            display: flex;
+            justify-content: space-evenly;
+            list-style: none;
+        }
+
+        li {
+            background-color: whitesmoke;
+            font-weight: bold;
+            padding: .5rem 1rem;
+            border-radius: .4rem;
+        }
+
+        label {
+            padding: 0%;
+            background-color: whitesmoke;
+        }
+
+        h1 {
+            text-align: center;
+            margin: auto;
+            margin-top: 10rem;
+            font-size: 4rem;
+            font-family: sans-serif;
+        }
+
+        h2 {
+            color: rebeccapurple;
+            margin: .5rem;
+        }
+
+        h3 {
+            color: rebeccapurple;
+            margin: .5rem;
+            font-size: 1.5rem;
+        }
+
+        h4 {
+            margin: .5rem;
+        }
+
+        main {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: space-evenly;
+        }
+
+        article {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: sans-serif;
+            border: 1px solid transparent;
+            padding: 1rem;
+            width: 28%;
+        }
+
+        article:hover {
+            border: 1px solid black;
+        }
+
+        img {
+            width: 15rem;
+            height: 10rem;
+        }
+
+        section {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            justify-content: space-evenly;
+            align-items: center;
+            background-color: white;
+            color: black;
+        }
+
+        section img {
+            width: 35rem !important;
+            height: auto;
+            max-height: 33rem;
+        }
+
+        section aside {
+            width: 50%;
+            height: 70vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        section aside h3 {
+            font-size: 3rem;
+            color: rebeccapurple;
+        }
+
+        section aside h2 {
+            color: rebeccapurple;
+            font-size: 2rem;
+        }
+
+        .cart-count {
+            background-color: rebeccapurple;
+            color: white;
+            font-size: 12px;
+            padding: 2px 5px;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+
+
+        h5 {
+            margin-left: 2rem;
+            color: rebeccapurple;
+            font-size: 3rem;
+        }
+
+        #cartPage article {
+            border: 1px solid black;
+            border-radius: 5px;
+        }
+
+        #cartItems {
+            margin-top: 3rem;
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: space-evenly;
+        }
+
+        #totalPrice {
+            text-align: right;
+            font-size: 2rem;
+            margin: 2rem;
+            margin-bottom: 1rem;
+            margin-top: 1rem;
+        }
+
+        #cartPage {
+            border: 2px solid black;
+            border-radius: 20px;
+            margin: 30px;
+        }
+
+        .cartPage {
+            visibility: hidden;
+        }
+
+        #cart h5 {
+            text-align: left;
+        }
+
+        #btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: blueviolet;
+            color: white;
+            border: 1px solid black;
+            border-radius: 5px;
+            height: 2rem;
+            width: 10rem;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <ul>
+            <li class="home" id="home">Home</li>
+            <li class="cat" id="smartphones">Smartphones</li>
+            <li class="cat" id="electronics">Electronics</li>
+            <li class="cat" id="laptops">Laptops</li>
+            <li class="cat" id="fragrances">Fragrances</li>
+            <li>
+                <label for="more"></label>
+                <select id="more" onchange="handleSection()">
+                    <option class="cat" value="" disabled selected>More</option>
+                    <option class="cat">Skincare</option>
+                    <option class="cat">Groceries</option>
+                    <option class="cat">Home-Decoration</option>
+                    <option class="cat">Men's Clothing</option>
+                    <option class="cat">Jewelery</option>
+                    <option class="cat">Women's clothing</option>
+                </select>
+            </li>
+            <li class="cart" id="cartNav">Cart<span id="cartCount" class="cart-count">0</span></li>
+        </ul>
+    </nav>
+    <main></main>
+    <div id="cartPage" class="cartPage">
+        <div id="cart">
+            <h5>Cart</h5>
+            <div id="cartItems"></div>
+            <div id="totalPrice"></div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript code goes here
+
+        let items;
+        let key;
+        let filteredItems;
+        let cart = [];
+        let main = document.querySelector('main');
+        let home = document.querySelector('.home');
+        let categories = document.querySelectorAll('.cat');
+        let select = document.querySelector('select');
+        let cartCount = document.getElementById('cartCount');
+        let cat = document.querySelector('#cartPage');
+        let cartNav = document.querySelector('#cartNav');
+
+        fetchProducts(); // Calling the function to display all products by default
+
+        async function fetchProducts() {
+            cat.classList.add('cartPage')
+            items = await fetch('https://dummyjson.com/products');
+            let items2 = await fetch('https://fakestoreapi.com/products/');
+            items = await items.json();
+            items2 = await items2.json();
+            items = items.products;
+            items = [...items, ...items2];
+            items = items.filter(e => 'OPPOF19' !== e.title);
+            displayData(items);
+            filteredItems = items;
+        }
+
+        function displayData(filteredItems) {
+            cat.classList.add('cartPage');
+            main.innerHTML = '';
+            let toHtml = filteredItems.map((product, index) => {
+                return (`<article onclick='productDisplay(${index})'>
+                <img src='${product?.images ? product.images[0] : product.image}'/>
+                <h3>${product.title.slice(0, 15)}</h3>
+                <h4>${product.description.slice(0, 300)}</h4>
+                <h2>$${product.price}</h2>
+            </article>`);
+            });
+            main.innerHTML = toHtml.join('');
+        }
+
+        function productDisplay(index) {
+            cat.classList.add('cartPage');
+            let product = filteredItems.find((e, i) => index == i);
+            main.innerHTML = '';
+            main.innerHTML = `<section>
+            <img src='${product?.images ? product.images[0] : product.image}'/>
+            <aside>
+                <h3>${product.title}</h3>
+                <h4>${product.description}</h4>
+                <h2>$${product.price}</h2>
+                <div id="btn" onclick="addToCart(${index})">Add to Cart</div>
+            </aside>
+            </section>`;
+        }
+
+        function addToCart(index) {
+            let product = filteredItems.find((e, i) => index == i);
+            cart.push(product);
+            updateCartCount();
+            showCart() 
+        }
+
+        function updateCartCount() {
+            cartCount.innerText = cart.length;
+        }
+
+        home.addEventListener('click', fetchProducts);
+        cartNav.addEventListener('click', showCart)
+
+        select.addEventListener('change', (event) => {
+            let text = select.options[select.selectedIndex].text;
+            text = text.toLowerCase();
+            filteredItems = items.filter((e) => text == e.category);
+            displayData(filteredItems);
+        });
+
+        categories.forEach((category) => {
+            category.addEventListener('click', (event) => {
+                key = event.target.outerText.toLowerCase();
+                filteredItems = items.filter(e => key == e.category);
+                displayData(filteredItems);
+            });
+        });
+
+        document.getElementById('cartNav').addEventListener('click', showCart);
+
+        function showCart() {
+            let cartPage = document.getElementById('cartPage');
+            let cartItems = document.getElementById('cartItems');
+            let totalPrice = document.getElementById('totalPrice');
+            main.innerHTML = "";
+            cartItems.innerHTML = "";
+            let cartTotalPrice = 0;
+            cat.classList.remove('cartPage');
+
+            if (cart.length === 0) {
+                cartItems.innerHTML = "<p>Your cart is empty.</p>";
+            } else {
+                cart.forEach((product) => {
+                    cartItems.innerHTML += `<article >
+                        <img src='${product?.images ? product.images[0] : product.image}'/>
+                        <h3>${product.title.slice(0, 15)}</h3>
+                        <h4>${product.description.slice(0, 300)}</h4>
+                        <h2>$${product.price}</h2>
+
+                    </article>`;
+                    cartTotalPrice += product.price;
+                });
+            }
+
+            totalPrice.innerText = `Total Price: $${cartTotalPrice.toFixed(2)}`;
+
+            cartPage.style.display = 'block';
+        }
+    </script>
+
+</body>
+
+</html>
